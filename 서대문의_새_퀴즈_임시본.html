@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>서대문의 새 탐험대!</title>
+
+<style>
+  :root{
+    --green: #4CAF50;
+    --green-dark: #2E7D32;
+    --green-light: #C8E6C9;
+    --sky: #4FC3F7;
+    --sky-dark: #0288D1;
+    --orange: #FFA726;
+    --orange-dark: #EF6C00;
+    --cream: #FFFDF5;
+    --text-dark: #33403A;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0; padding:0; width:100%; height:100%;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+    color: var(--text-dark);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  body{
+    background: linear-gradient(160deg, #E8F8F0 0%, #DFF3FB 50%, #FFF6E5 100%);
+    min-height: 100vh;
+    display:flex; align-items:center; justify-content:center;
+    overflow-x:hidden;
+  }
+
+  #app{ width:100%; max-width: 900px; min-height: 100vh; padding: 24px 20px 60px; position:relative; }
+
+  .screen{ display:none; animation: fadeIn .35s ease; }
+  .screen.active{ display:block; }
+  @keyframes fadeIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
+
+  h1, h2, h3{ margin:0; }
+
+  .btn{
+    border:none; border-radius: 999px; padding: 18px 32px; font-size: 1.25rem; font-weight: 800;
+    cursor:pointer; color:#fff; box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+    transition: transform .08s ease, box-shadow .08s ease; touch-action: manipulation;
+  }
+  .btn:active{ transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.15); }
+  .btn-green{ background: var(--green); }
+  .btn-sky{ background: var(--sky); }
+  .btn-orange{ background: var(--orange); }
+  .btn-gray{ background:#9AA5A0; }
+  .btn-block{ width:100%; display:block; text-align:center; }
+
+  .top-bar{ display:flex; justify-content:flex-end; margin-bottom: 8px; }
+  .guide-open-btn{
+    background:#fff; border: 3px solid var(--orange); color: var(--orange-dark);
+    border-radius: 999px; padding: 10px 20px; font-size: 1rem; font-weight:800; cursor:pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+  }
+  .guide-open-btn:active{ transform: translateY(3px); box-shadow:none; }
+
+  .main-card{
+    background:#fff; border-radius: 32px; padding: 40px 28px 36px; text-align:center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 10px;
+  }
+  .main-emoji{ font-size: 5rem; margin-bottom: 6px; animation: bob 2.4s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform: translateY(0) rotate(0deg); } 50%{ transform: translateY(-10px) rotate(-4deg); } }
+  .main-title{ font-size: 2rem; color: var(--green-dark); font-weight: 900; margin-bottom: 6px; }
+  .main-sub{ font-size: 1.05rem; color:#6b7a72; margin-bottom: 26px; line-height:1.5; }
+
+  .topic-chip-row{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom: 30px; }
+  .topic-chip{ background: var(--green-light); color: var(--green-dark); border-radius: 999px; padding: 8px 16px; font-size: 0.9rem; font-weight:700; }
+
+  .game-card{ background:#fff; border-radius: 28px; padding: 24px 22px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+
+  .progress-wrap{ display:flex; align-items:center; gap:10px; margin-bottom: 18px; }
+  .progress-label{ font-weight:800; color: var(--green-dark); white-space:nowrap; font-size:1rem; }
+  .progress-bar-bg{ flex:1; background: #EDF3EE; border-radius: 999px; height: 14px; overflow:hidden; }
+  .progress-bar-fill{ height:100%; background: linear-gradient(90deg, var(--green), var(--sky)); border-radius: 999px; transition: width .3s ease; }
+
+  .question-box{
+    background: #FBFFF9; border: 2px dashed var(--green-light); border-radius: 20px;
+    padding: 20px 18px; margin-bottom: 20px; text-align:center;
+  }
+  .question-type-badge{
+    display:inline-block; background: var(--sky); color:#fff; font-size: 0.8rem; font-weight:800;
+    padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
+  }
+  .question-text{ font-size: 1.3rem; font-weight: 800; color: var(--text-dark); line-height:1.5; }
+
+  .ox-row{ display:flex; gap: 18px; justify-content:center; margin-top: 10px; }
+  .ox-btn{ width: 110px; height: 110px; border-radius: 50%; font-size: 3rem; font-weight:900; border: none; color:#fff; cursor:pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .ox-btn:active{ transform: translateY(6px); box-shadow:none; }
+  .ox-o{ background: var(--sky); }
+  .ox-x{ background: var(--orange); }
+
+  .option-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 6px; }
+  .option-grid.single-col{ grid-template-columns: 1fr; }
+  .option-card{
+    background: #F3FBF4; border: 3px solid var(--green-light); border-radius: 18px; padding: 18px 10px;
+    text-align:center; cursor:pointer; font-size: 1.1rem; font-weight:800; color: var(--text-dark);
+    transition: transform .08s ease, border-color .15s ease;
+  }
+  .option-card:active{ transform: scale(0.97); }
+  .option-card.correct{ background: #DFF5E1; border-color: var(--green); }
+  .option-card.wrong{ background: #FCE4E4; border-color: #E57373; animation: shake .35s ease; }
+  @keyframes shake{ 0%,100%{ transform: translateX(0); } 25%{ transform: translateX(-6px); } 75%{ transform: translateX(6px); } }
+
+  .match-wrap{ display:flex; justify-content:space-between; gap: 16px; margin-top: 14px; }
+  .match-col{ flex:1; display:flex; flex-direction:column; gap: 10px; }
+  .match-item{
+    background: #F3FBF4; border: 3px solid var(--green-light); border-radius: 14px; padding: 12px 8px;
+    text-align:center; font-weight:800; font-size: 1rem; cursor:pointer;
+  }
+  .match-item.selected{ border-color: var(--sky); background: #E1F5FE; }
+  .match-item.matched{ background: #DFF5E1; border-color: var(--green); cursor:default; opacity: 0.75; }
+  .match-item.wrong-flash{ animation: shake .35s ease; border-color:#E57373; background:#FCE4E4; }
+
+  .sound-btn{
+    background: var(--sky); color:#fff; border:none; border-radius: 999px; padding: 16px 26px;
+    font-size: 1.1rem; font-weight: 800; cursor:pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+    margin: 10px auto 4px; display:block;
+  }
+  .sound-btn:active{ transform: translateY(5px); box-shadow:none; }
+  .sound-hint{ text-align:center; color:#7c8b83; font-size: 0.85rem; margin-bottom: 10px; }
+
+  .feedback-banner{
+    text-align:center; font-size: 1.2rem; font-weight: 900; border-radius: 16px; padding: 14px;
+    margin: 16px 0; display:none; animation: popIn .3s ease;
+  }
+  @keyframes popIn{ 0%{ transform: scale(0.7); opacity:0; } 100%{ transform: scale(1); opacity:1; } }
+  .feedback-banner.show{ display:block; }
+  .feedback-banner.correct{ background:#DFF5E1; color: var(--green-dark); }
+  .feedback-banner.wrong{ background:#FCE4E4; color:#C1483D; }
+
+  .next-btn-wrap{ text-align:center; margin-top: 6px; }
+  .confirm-row{ display:flex; gap: 10px; justify-content:center; margin-top: 6px; }
+
+  .result-card{ background:#fff; border-radius: 32px; padding: 46px 26px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  .result-emoji{ font-size: 5.5rem; margin-bottom: 10px; animation: popIn .4s ease; }
+  .result-title{ font-size: 1.9rem; font-weight: 900; color: var(--green-dark); margin-bottom: 8px; }
+  .result-score{
+    font-size: 1.5rem; font-weight: 800; color: var(--sky-dark); background: #EAF7FD; display:inline-block;
+    padding: 10px 26px; border-radius: 999px; margin-bottom: 26px;
+  }
+  .result-desc{ color:#6b7a72; font-size: 1rem; margin-bottom: 30px; line-height:1.6; }
+
+  .modal-overlay{ position:fixed; inset:0; background: rgba(30, 46, 38, 0.55); display:flex; align-items:center; justify-content:center; padding: 20px; z-index: 100; }
+  .modal-overlay.hidden{ display:none; }
+  .modal-box{
+    background: var(--cream); border-radius: 28px; width:100%; max-width: 560px; max-height: 84vh;
+    overflow-y:auto; padding: 26px 22px 30px; position:relative; animation: popIn .25s ease;
+  }
+  .modal-close{
+    position:absolute; top: 14px; right: 16px; background: #EEE; border:none; width: 36px; height:36px;
+    border-radius:50%; font-size: 1.1rem; font-weight:800; cursor:pointer; color:#555;
+  }
+  .modal-title{ text-align:center; font-size: 1.4rem; font-weight: 900; color: var(--green-dark); margin-bottom: 20px; }
+  .guide-card-list{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .guide-card{ background:#fff; border: 3px solid var(--green-light); border-radius: 18px; padding: 18px 10px; text-align:center; cursor:pointer; font-weight:800; }
+  .guide-card .g-emoji{ font-size: 2.4rem; display:block; margin-bottom:6px; }
+  .guide-card .g-title{ font-size: 0.95rem; color: var(--text-dark); }
+  .guide-detail{ text-align:center; }
+  .guide-detail .g-emoji-big{ font-size: 4rem; display:block; margin-bottom: 10px; }
+  .guide-detail h3{ color: var(--green-dark); font-size: 1.3rem; margin-bottom: 14px; }
+  .guide-detail p{ color:#556; line-height: 1.7; font-size: 1rem; margin-bottom: 22px; }
+  .guide-detail .g-tags{ color:#8fa89c; font-size: 0.85rem; margin-top:-14px; margin-bottom: 22px; line-height:1.6; }
+
+  .draft-banner{
+    background:#FFF3E0; border: 2px dashed var(--orange); color: var(--orange-dark);
+    border-radius: 16px; padding: 10px 14px; text-align:center; font-weight:800; font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 480px){
+    .main-title{ font-size: 1.6rem; }
+    .question-text{ font-size: 1.1rem; }
+    .ox-btn{ width: 90px; height: 90px; font-size: 2.3rem; }
+    .guide-card-list{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div class="draft-banner">🚧 임시본입니다 — 형식과 내용만 먼저 확인해보세요! (새소리 문제는 아직 실제 음원 없이 텍스트 힌트로 표시됩니다)</div>
+
+  <!-- 메인 화면 -->
+  <div id="screen-main" class="screen active">
+    <div class="top-bar">
+      <button class="guide-open-btn" onclick="openGuide()">📖 새 도감</button>
+    </div>
+
+    <div class="main-card">
+      <div class="main-emoji">🦆🌳</div>
+      <h1 class="main-title">서대문의 새 탐험대!</h1>
+      <p class="main-sub">
+        홍제천과 백련산에서 만난 새들을<br>
+        퀴즈로 다시 만나볼까요?<br>
+        6개의 문제, 1분이면 충분해요!
+      </p>
+
+      <div class="topic-chip-row">
+        <span class="topic-chip">서대문의새 🕊️</span>
+        <span class="topic-chip">홍제천 🏞️</span>
+        <span class="topic-chip">백련산 🌳</span>
+        <span class="topic-chip">새소리들어보기 🎵</span>
+      </div>
+
+      <button class="btn btn-green btn-block" onclick="startGame()">🚀 시작하기</button>
+    </div>
+  </div>
+
+  <!-- 게임 화면 -->
+  <div id="screen-game" class="screen">
+    <div class="game-card">
+      <div class="progress-wrap">
+        <span class="progress-label" id="progress-label">문제 1 / 6</span>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-bar-fill" style="width:16.6%;"></div>
+        </div>
+      </div>
+
+      <div id="quiz-content"></div>
+      <div id="feedback-banner" class="feedback-banner"></div>
+
+      <div class="next-btn-wrap" id="next-btn-wrap" style="display:none;">
+        <button class="btn btn-sky" onclick="goNextQuestion()" id="next-btn-text">다음 문제 ➜</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="screen-result" class="screen">
+    <div class="result-card">
+      <div class="result-emoji" id="result-emoji">🏆</div>
+      <div class="result-title" id="result-title">서대문 새박사!</div>
+      <div class="result-score" id="result-score">6 / 6</div>
+      <p class="result-desc" id="result-desc">정말 대단해요! 오늘 배운 걸 다 기억하고 있네요.</p>
+      <button class="btn btn-orange btn-block" onclick="restartGame()">🔄 다시하기</button>
+    </div>
+  </div>
+
+  <!-- 새 도감 모달 -->
+  <div id="modal-guide" class="modal-overlay hidden">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeGuide()">✕</button>
+
+      <div id="guide-list-view">
+        <h2 class="modal-title">📖 새 도감</h2>
+        <div class="guide-card-list" id="guide-card-list"></div>
+      </div>
+
+      <div id="guide-detail-view" class="guide-detail" style="display:none;">
+        <h3 id="guide-detail-title">청둥오리</h3>
+        <p id="guide-detail-desc">설명이 여기에 표시됩니다.</p>
+        <div class="g-tags" id="guide-detail-tags"></div>
+        <button class="btn btn-green" onclick="backToGuideList()">◀ 목록으로</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<audio id="bird-audio" preload="none"></audio>
+
+<script>
+/* =========================================================
+   문제 데이터 (풀 pool) — 매번 여기서 무작위로 6문제를 뽑습니다.
+   type: "ox" | "choice3" | "match" | "sound"
+   ========================================================= */
+
+const oxPool = [
+  { id:"ox1", type:"ox", question:"청둥오리 수컷은 초록색 머리를 가지고 있어요.", answer:true },
+  { id:"ox2", type:"ox", question:"왜가리는 얕은 물에서 물고기나 개구리를 잡아먹어요.", answer:true },
+  { id:"ox3", type:"ox", question:"딱따구리는 나무에 구멍을 뚫지 않고 땅에 둥지를 지어요.", answer:false },
+  { id:"ox4", type:"ox", question:"어치는 도토리를 저장해두는 습성이 있어요.", answer:true },
+  { id:"ox5", type:"ox", question:"흰뺨검둥오리는 겨울에만 잠깐 머무는 철새예요.", answer:false },
+  { id:"ox6", type:"ox", question:"직박구리는 도시에서는 볼 수 없는, 아주 깊은 산에만 사는 새예요.", answer:false },
+  { id:"ox7", type:"ox", question:"중대백로는 쇠백로보다 몸집이 커요.", answer:true },
+  { id:"ox8", type:"ox", question:"물까치는 혼자 다니는 것을 좋아하는 새예요.", answer:false },
+  { id:"ox9", type:"ox", question:"참새는 사람과 가장 가까운 곳에서 살아가는 텃새예요.", answer:true },
+  { id:"ox10", type:"ox", question:"붉은머리오목눈이는 '뱁새'라고도 불려요.", answer:true },
+  { id:"ox11", type:"ox", question:"까치는 나뭇가지나 전봇대에 둥지를 지어요.", answer:true },
+  { id:"ox12", type:"ox", question:"멧비둘기는 몸빛이 화려한 원색이에요.", answer:false },
+  { id:"ox13", type:"ox", question:"큰부리까마귀는 잡식성이라 도심 환경에도 잘 적응해요.", answer:true },
+  { id:"ox14", type:"ox", question:"새호리기는 겨울에만 볼 수 있는 겨울철새예요.", answer:false },
+];
+
+const choice3Pool = [
+  { id:"c3_1", type:"choice3", question:"홍제천 얕은 물가에서 물고기와 개구리를 사냥하는 새는?",
+    options:["왜가리", "참새", "까치"], answerIndex:0 },
+  { id:"c3_2", type:"choice3", question:"도토리를 저장해 씨앗을 퍼뜨리는 백련산 숲의 새는?",
+    options:["딱새", "어치", "쇠백로"], answerIndex:1 },
+  { id:"c3_3", type:"choice3", question:"나무에 구멍을 뚫어 둥지를 만드는 새는?",
+    options:["직박구리", "딱따구리", "중대백로"], answerIndex:1 },
+  { id:"c3_4", type:"choice3", question:"쇠백로보다 몸집이 크고 온몸이 흰색인 새는?",
+    options:["중대백로", "쇠백로", "청둥오리"], answerIndex:0 },
+  { id:"c3_5", type:"choice3", question:"수컷은 초록색 머리, 암컷은 갈색 무늬로 위장하는 새는?",
+    options:["흰뺨검둥오리", "청둥오리", "왜가리"], answerIndex:1 },
+  { id:"c3_6", type:"choice3", question:"도시와 자연을 잇는 생태 연결고리 역할을 하는 백련산·홍제천의 산새는?",
+    options:["직박구리", "쇠백로", "딱따구리"], answerIndex:0 },
+  { id:"c3_7", type:"choice3", question:"가족 단위로 무리지어 다니며 활발히 우는, 푸른 날개와 긴 꼬리를 가진 새는?",
+    options:["물까치", "참새", "까치"], answerIndex:0 },
+  { id:"c3_8", type:"choice3", question:"'뱁새'라는 별명으로도 잘 알려진 작고 동그란 새는?",
+    options:["멧비둘기", "붉은머리오목눈이", "큰부리까마귀"], answerIndex:1 },
+  { id:"c3_9", type:"choice3", question:"청둥오리보다 통통하고 노랗고 넓적한 부리를 가진 새는?",
+    options:["집오리", "흰뺨검둥오리", "청둥오리"], answerIndex:0 },
+  { id:"c3_10", type:"choice3", question:"홍제천 상공을 빠르게 날며 작은 새와 곤충을 사냥하는 여름 철새는?",
+    options:["새호리기", "까치", "멧비둘기"], answerIndex:0 },
+  { id:"c3_11", type:"choice3", question:"회색의 통통한 몸으로 도심 산책로에서 무리 지어 사는 새는?",
+    options:["집비둘기", "참새", "까치"], answerIndex:0 },
+  { id:"c3_12", type:"choice3", question:"검은색과 흰색이 조화를 이루는 우리나라 대표 텃새는?",
+    options:["까치", "큰부리까마귀", "물까치"], answerIndex:0 },
+];
+
+const matchPool = [
+  { id:"match1", type:"match", question:"새와 특징을 알맞게 연결해보세요!",
+    pairs:[
+      ["청둥오리", "초록색 머리 수컷"],
+      ["왜가리", "얕은 물 포식자"],
+      ["딱따구리", "나무 구멍 둥지"],
+      ["어치", "도토리 저장"]
+    ] },
+  { id:"match2", type:"match", question:"새와 특징을 알맞게 연결해보세요!",
+    pairs:[
+      ["직박구리", "도시 산새"],
+      ["쇠백로", "작은 흰색 물새"],
+      ["중대백로", "큰 흰색 물새"],
+      ["흰뺨검둥오리", "흰 뺨 무늬 텃새"]
+    ] },
+  { id:"match3", type:"match", question:"새와 특징을 알맞게 연결해보세요!",
+    pairs:[
+      ["큰부리까마귀", "숲과 도시를 잇는 청소부"],
+      ["새호리기", "여름철새 맹금류"],
+      ["집오리", "가축화된 순한 오리"],
+      ["집비둘기", "도시 적응 조류"]
+    ] },
+  { id:"match4", type:"match", question:"새와 특징을 알맞게 연결해보세요!",
+    pairs:[
+      ["물까치", "무리생활 산새"],
+      ["참새", "사람과 가장 가까운 텃새"],
+      ["붉은머리오목눈이", "덤불 속 뱁새"],
+      ["까치", "전봇대 둥지 텃새"]
+    ] },
+];
+
+const soundPool = [
+  { id:"sound1", type:"sound", question:"“딱딱” 소리를 내는 이 새는 누구일까요?",
+    audioSrc:"", options:["딱새", "청둥오리", "왜가리"], answerIndex:0 },
+  { id:"sound2", type:"sound", question:"“톡톡” 나무를 쪼는 소리를 내는 새는?",
+    audioSrc:"", options:["딱따구리", "어치", "쇠백로"], answerIndex:0 },
+  { id:"sound3", type:"sound", question:"여러 소리를 흉내내며 숲의 소리 다양성을 더하는 새는?",
+    audioSrc:"", options:["어치", "참새", "까치"], answerIndex:0 },
+  { id:"sound4", type:"sound", question:"도시와 숲을 이어주는, 다양한 울음소리를 가진 산새는?",
+    audioSrc:"", options:["직박구리", "딱새", "중대백로"], answerIndex:0 },
+  { id:"sound5", type:"sound", question:"가족끼리 무리지어 다니며 활발하게 울음소리를 내는 새는?",
+    audioSrc:"", options:["물까치", "참새", "까치"], answerIndex:0 },
+  { id:"sound6", type:"sound", question:"재잘거리는 울음소리를 내며 덤불 사이를 떼지어 다니는 작은 새는?",
+    audioSrc:"", options:["붉은머리오목눈이", "딱새", "딱따구리"], answerIndex:0 },
+  { id:"sound7", type:"sound", question:"나지막한 울음소리로 숲속 생태계를 이루는 산림 비둘기는?",
+    audioSrc:"", options:["멧비둘기", "집비둘기", "까치"], answerIndex:0 },
+];
+
+/* =========================================================
+   새 도감 데이터
+   ========================================================= */
+const birdGuideData = [
+  { id:1, title:"청둥오리",
+    desc:"홍제천처럼 물이 흐르는 하천에서 쉽게 만날 수 있는 대표적인 오리예요. 수컷은 초록색 머리가 인상적이고, 암컷은 갈색 무늬로 위장을 잘해요. 일부는 도심 하천에서 사계절을 살아가는 텃새랍니다.",
+    tags:"#도시하천_생태계 #텃새 #조류의_계절성" },
+  { id:2, title:"왜가리",
+    desc:"긴 다리와 목을 이용해 홍제천 같은 얕은 물에서 물고기나 개구리를 잡아먹는 물가 생태계의 포식자예요. 날개를 넓게 펴고 천천히 나는 모습을 자주 볼 수 있어요.",
+    tags:"#습지_생태계 #하천_생물다양성 #포식자" },
+  { id:3, title:"직박구리",
+    desc:"백련산의 나무숲과 홍제천변에서 볼 수 있는 도시 친화적 산새예요. 다양한 울음소리를 내며 열매와 곤충을 먹고 살고, 도심과 자연을 잇는 생태 연결고리 역할을 해요.",
+    tags:"#도시_산림 #조류의_소리 #생태_연결자" },
+  { id:4, title:"쇠백로",
+    desc:"작은 체구에 온몸이 흰색이고, 홍제천 얕은 물가에서 물고기나 곤충을 잡아먹어요. 다리와 부리가 검은색이며 민첩하게 먹이를 사냥하는 도시 적응형 습지 조류예요.",
+    tags:"#습지_조류 #도시_적응 #생물다양성" },
+  { id:5, title:"어치",
+    desc:"뺨의 줄무늬와 날개의 파란 무늬가 아름다운 새로, 백련산 숲속에서 다양한 소리로 주변을 흉내내요. 도토리를 저장해두는 습성은 산림 생태계의 씨앗 확산자 역할을 해요.",
+    tags:"#숲속_먹이망 #씨앗_확산자 #생물의_소리_다양성" },
+  { id:6, title:"중대백로",
+    desc:"쇠백로보다 크고 온몸이 흰색이며, 홍제천의 조용한 물가에서 주로 관찰돼요. 긴 목과 부리로 물고기를 낚듯이 사냥하는, 도심 속 하천 생태계의 상위 포식자예요.",
+    tags:"#도시하천 #상위_포식자 #조류의_크기_비교" },
+  { id:7, title:"딱따구리",
+    desc:"백련산의 오래된 나무에 구멍을 뚫어 둥지를 만들고, 나무껍질 아래 곤충을 잡아먹어요. “톡톡” 나무를 쪼는 소리는 숲속에서 쉽게 들을 수 있는, 산림 건강성의 지표종이에요.",
+    tags:"#산림_생태계 #곤충_조절 #생물_다양성_지표종" },
+  { id:8, title:"흰뺨검둥오리",
+    desc:"이름처럼 검은 몸에 흰 뺨 무늬가 특징인 텃새로, 홍제천 일대에서 자주 관찰돼요. 연못이나 작은 도랑에서도 잘 적응해 살아가는, 도시 생태 복원 지표종이에요.",
+    tags:"#텃새 #도시_생태_복원 #생물지표종" },
+  { id:9, title:"딱새",
+    desc:"작은 몸집에 검정과 붉은 빛이 도드라지는 새로, 백련산 산책로 주변에서 자주 볼 수 있어요. 곤충을 잡아먹으며 나뭇가지에서 “딱딱” 소리를 내는 도시 적응형 산림 조류예요.",
+    tags:"#도시_산림 #곤충_포식자 #조류의_도시_적응" },
+  { id:10, title:"물까치",
+    desc:"푸른빛 날개와 긴 꼬리가 특징인 새로, 홍제천 주변 나무와 백련산 숲에서 무리를 지어 생활해요. 가족 단위로 함께 먹이를 찾으며 활발하게 울음소리를 내는, 도심 속 숲 생태계 건강성을 보여주는 새예요.",
+    tags:"#도시_산림 #무리생활 #생물다양성" },
+  { id:11, title:"참새",
+    desc:"홍제천과 도심 곳곳에서 가장 흔하게 만날 수 있는 친숙한 텃새예요. 작은 씨앗과 곤충을 먹으며 사람과 가장 가까운 곳에서 살아가는, 사람과 자연의 공존을 보여주는 새예요.",
+    tags:"#도시_텃새 #공존 #도시_생태" },
+  { id:12, title:"붉은머리오목눈이",
+    desc:"'뱁새'로도 잘 알려진 새로, 붉은 빛이 도는 머리와 동글동글한 몸집이 특징이에요. 홍제천 변의 덤불이나 억새밭 사이를 떼 지어 다니며 곤충과 씨앗을 찾아먹고, 재잘거리는 울음소리가 인상적이에요.",
+    tags:"#하천_생태계 #무리생활 #생물다양성" },
+  { id:13, title:"까치",
+    desc:"검은색과 흰색 깃털이 조화를 이루는 우리나라의 대표적인 텃새예요. 나뭇가지와 전봇대 등에 둥지를 짓고 다양한 먹이를 먹으며 도시 환경에 잘 적응해 살아가요.",
+    tags:"#도시_적응 #텃새 #도시_생태계" },
+  { id:14, title:"멧비둘기",
+    desc:"회갈색 몸과 목의 비늘무늬가 특징인 숲속의 비둘기로, 백련산 숲속과 도심 공원, 하천변을 오가며 살아가요. 씨앗과 열매를 먹으며 나지막한 울음소리로 숲의 생태계를 이루는 조류예요.",
+    tags:"#도시_산림 #텃새" },
+  { id:15, title:"큰부리까마귀",
+    desc:"크고 묵직한 체구에 두꺼운 부리를 가진 새로, 백련산과 도심 주변에서 주로 관찰돼요. 뛰어난 지능과 잡식성 식성으로 도심 환경 변화에 매우 잘 적응했고, 숲과 도시를 잇는 청소부 역할을 해요.",
+    tags:"#조류의_도시_적응 #청소부 #지능형_조류" },
+  { id:16, title:"집오리",
+    desc:"청둥오리보다 통통한 체형에 노랗고 넓적한 부리가 특징이며, 홍제천 일대에서 청둥오리나 흰뺨검둥오리와 함께 관찰돼요. 야생 청둥오리가 가축화된 종으로, 순한 성품 덕분에 친근한 느낌을 줘요.",
+    tags:"#도시하천 #친근한_새" },
+  { id:17, title:"새호리기",
+    desc:"뾰족한 날개와 아랫배의 붉은 깃털이 특징인 소형 맹금류예요. 홍제천 상공을 빠르게 날며 작은 새와 곤충을 사냥하는 모습이 관찰되는, 여름철 우리나라를 찾아오는 여름 철새예요.",
+    tags:"#맹금류 #여름철새 #포식자" },
+  { id:18, title:"집비둘기",
+    desc:"회색의 통통한 몸집이 특징인 대표적인 도시의 새예요. 홍제천 산책로와 주변 도심 지역에서 무리를 지어 살아가며 사람의 생활환경에 잘 적응한 모습을 볼 수 있어요.",
+    tags:"#도시_생태계 #도시_적응" },
+];
+
+/* =========================================================
+   게임 로직
+   ========================================================= */
+
+const TOTAL_QUESTIONS = 6;
+const MIN_SOUND_COUNT = Math.ceil(TOTAL_QUESTIONS * 0.25); // 새소리 문제 최소 개수 (25%↑ 보장)
+
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let answeredCurrent = false;
+
+function shuffleArray(arr){
+  const copy = [...arr];
+  for(let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function showScreen(screenId){
+  document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+  document.getElementById(screenId).classList.add("active");
+}
+
+// 새소리 문제를 최소 MIN_SOUND_COUNT개 보장하며, 나머지는 다른 유형에서 무작위로 채운다
+function pickQuestionSet(){
+  const shuffledSound = shuffleArray(soundPool);
+  const soundCount = Math.min(shuffledSound.length, Math.max(MIN_SOUND_COUNT, 1));
+  const chosenSound = shuffledSound.slice(0, soundCount);
+
+  const otherPool = shuffleArray([...oxPool, ...choice3Pool, ...matchPool]);
+  const remainingCount = TOTAL_QUESTIONS - chosenSound.length;
+  const chosenOther = otherPool.slice(0, remainingCount);
+
+  return shuffleArray([...chosenSound, ...chosenOther]);
+}
+
+function startGame(){
+  currentQuestions = pickQuestionSet();
+  currentIndex = 0;
+  score = 0;
+  showScreen("screen-game");
+  renderQuestion();
+}
+
+function restartGame(){
+  currentQuestions = [];
+  currentIndex = 0;
+  score = 0;
+  showScreen("screen-main");
+}
+
+function updateProgress(){
+  const label = document.getElementById("progress-label");
+  const fill = document.getElementById("progress-bar-fill");
+  label.textContent = `문제 ${currentIndex + 1} / ${TOTAL_QUESTIONS}`;
+  fill.style.width = `${((currentIndex + 1) / TOTAL_QUESTIONS) * 100}%`;
+}
+
+function markAnswer(isCorrect){
+  if(answeredCurrent) return;
+  answeredCurrent = true;
+
+  if(isCorrect) score++;
+
+  const banner = document.getElementById("feedback-banner");
+  banner.classList.remove("correct", "wrong");
+  banner.classList.add(isCorrect ? "correct" : "wrong", "show");
+  banner.textContent = isCorrect ? "✅ 정답이에요! 정말 잘했어요!" : "❌ 아쉬워요! 다음 문제에서 다시 도전해봐요!";
+
+  const nextBtnText = document.getElementById("next-btn-text");
+  nextBtnText.textContent = (currentIndex === TOTAL_QUESTIONS - 1) ? "결과 보기 🎉" : "다음 문제 ➜";
+
+  document.getElementById("next-btn-wrap").style.display = "block";
+}
+
+function goNextQuestion(){
+  currentIndex++;
+  if(currentIndex >= TOTAL_QUESTIONS){
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResult(){
+  const emojiEl = document.getElementById("result-emoji");
+  const titleEl = document.getElementById("result-title");
+  const scoreEl = document.getElementById("result-score");
+  const descEl = document.getElementById("result-desc");
+
+  scoreEl.textContent = `${score} / ${TOTAL_QUESTIONS}`;
+
+  if(score <= 2){
+    emojiEl.textContent = "🌱";
+    titleEl.textContent = "새 친구 입문자";
+    descEl.textContent = "오늘 만난 새 친구들을 조금 더 기억해볼까요? 새 도감을 다시 보면 도움이 될 거예요!";
+  } else if(score <= 4){
+    emojiEl.textContent = "🍀";
+    titleEl.textContent = "탐조 탐험가";
+    descEl.textContent = "꽤 많이 기억하고 있네요! 조금만 더 하면 새박사가 될 수 있어요.";
+  } else {
+    emojiEl.textContent = "🏆";
+    titleEl.textContent = "서대문 새박사!";
+    descEl.textContent = "정말 대단해요! 오늘 배운 내용을 완벽하게 기억하고 있네요.";
+  }
+
+  showScreen("screen-result");
+}
+
+function renderQuestion(){
+  answeredCurrent = false;
+  updateProgress();
+
+  const banner = document.getElementById("feedback-banner");
+  banner.classList.remove("show", "correct", "wrong");
+  banner.textContent = "";
+  document.getElementById("next-btn-wrap").style.display = "none";
+
+  const q = currentQuestions[currentIndex];
+  const content = document.getElementById("quiz-content");
+  content.innerHTML = "";
+
+  switch(q.type){
+    case "ox":     renderOX(q, content); break;
+    case "choice3":renderChoice3(q, content); break;
+    case "match":  renderMatch(q, content); break;
+    case "sound":  renderSound(q, content); break;
+    default: content.innerHTML = "<p>문제를 불러올 수 없어요.</p>";
+  }
+}
+
+function renderOX(q, content){
+  content.innerHTML = `
+    <div class="question-box">
+      <span class="question-type-badge">OX 퀴즈</span>
+      <div class="question-text">${q.question}</div>
+    </div>
+    <div class="ox-row">
+      <button class="ox-btn ox-o" id="ox-btn-true">O</button>
+      <button class="ox-btn ox-x" id="ox-btn-false">X</button>
+    </div>
+  `;
+  document.getElementById("ox-btn-true").addEventListener("click", () => handleOXClick(true, q));
+  document.getElementById("ox-btn-false").addEventListener("click", () => handleOXClick(false, q));
+}
+
+function handleOXClick(selected, q){
+  if(answeredCurrent) return;
+  markAnswer(selected === q.answer);
+}
+
+function renderChoice3(q, content){
+  let optionsHtml = "";
+  q.options.forEach((opt, idx) => {
+    optionsHtml += `<div class="option-card" data-idx="${idx}">${opt}</div>`;
+  });
+
+  content.innerHTML = `
+    <div class="question-box">
+      <span class="question-type-badge">3지선다</span>
+      <div class="question-text">${q.question}</div>
+    </div>
+    <div class="option-grid single-col">${optionsHtml}</div>
+  `;
+
+  content.querySelectorAll(".option-card").forEach(card => {
+    card.addEventListener("click", () => {
+      if(answeredCurrent) return;
+      const idx = Number(card.dataset.idx);
+      const isCorrect = idx === q.answerIndex;
+      card.classList.add(isCorrect ? "correct" : "wrong");
+      if(!isCorrect){
+        content.querySelector(`.option-card[data-idx="${q.answerIndex}"]`).classList.add("correct");
+      }
+      markAnswer(isCorrect);
+    });
+  });
+}
+
+function renderMatch(q, content){
+  const leftItems = q.pairs.map((p, idx) => ({ label: p[0], pairIdx: idx }));
+  const rightItems = shuffleArray(q.pairs.map((p, idx) => ({ label: p[1], pairIdx: idx })));
+
+  let leftHtml = leftItems.map((item, i) =>
+    `<div class="match-item" data-side="left" data-pair="${item.pairIdx}" data-key="L${i}">${item.label}</div>`
+  ).join("");
+  let rightHtml = rightItems.map((item, i) =>
+    `<div class="match-item" data-side="right" data-pair="${item.pairIdx}" data-key="R${i}">${item.label}</div>`
+  ).join("");
+
+  content.innerHTML = `
+    <div class="question-box">
+      <span class="question-type-badge">짝짓기</span>
+      <div class="question-text">${q.question}</div>
+    </div>
+    <div class="match-wrap">
+      <div class="match-col" id="match-left">${leftHtml}</div>
+      <div class="match-col" id="match-right">${rightHtml}</div>
+    </div>
+  `;
+
+  let selectedLeft = null;
+  let matchedCount = 0;
+  let hadWrongAttempt = false;
+  const totalPairs = q.pairs.length;
+
+  content.querySelectorAll(".match-item").forEach(el => {
+    el.addEventListener("click", () => {
+      if(answeredCurrent) return;
+      if(el.classList.contains("matched")) return;
+
+      const side = el.dataset.side;
+
+      if(side === "left"){
+        content.querySelectorAll('.match-item[data-side="left"]').forEach(l => l.classList.remove("selected"));
+        el.classList.add("selected");
+        selectedLeft = el;
+        return;
+      }
+
+      if(!selectedLeft) return;
+
+      const leftPair = selectedLeft.dataset.pair;
+      const rightPair = el.dataset.pair;
+
+      if(leftPair === rightPair){
+        selectedLeft.classList.remove("selected");
+        selectedLeft.classList.add("matched");
+        el.classList.add("matched");
+        selectedLeft = null;
+        matchedCount++;
+        if(matchedCount === totalPairs){
+          markAnswer(!hadWrongAttempt);
+        }
+      } else {
+        hadWrongAttempt = true;
+        el.classList.add("wrong-flash");
+        selectedLeft.classList.add("wrong-flash");
+        setTimeout(() => {
+          el.classList.remove("wrong-flash");
+          selectedLeft.classList.remove("wrong-flash", "selected");
+          selectedLeft = null;
+        }, 350);
+      }
+    });
+  });
+}
+
+function renderSound(q, content){
+  let optionsHtml = "";
+  q.options.forEach((label, idx) => {
+    optionsHtml += `<div class="option-card" data-idx="${idx}">${label}</div>`;
+  });
+
+  content.innerHTML = `
+    <div class="question-box">
+      <span class="question-type-badge">새소리 문제</span>
+      <div class="question-text">${q.question}</div>
+      <button class="sound-btn" id="sound-play-btn">🔊 새소리 재생</button>
+      <div class="sound-hint" id="sound-hint">버튼을 눌러 소리를 들어보세요</div>
+    </div>
+    <div class="option-grid single-col">${optionsHtml}</div>
+  `;
+
+  document.getElementById("sound-play-btn").addEventListener("click", () => {
+    playBirdSound(q.audioSrc);
+  });
+
+  content.querySelectorAll(".option-card").forEach(card => {
+    card.addEventListener("click", () => {
+      if(answeredCurrent) return;
+      const idx = Number(card.dataset.idx);
+      const isCorrect = idx === q.answerIndex;
+      card.classList.add(isCorrect ? "correct" : "wrong");
+      if(!isCorrect){
+        content.querySelector(`.option-card[data-idx="${q.answerIndex}"]`).classList.add("correct");
+      }
+      markAnswer(isCorrect);
+    });
+  });
+}
+
+// 새소리 재생 함수 - 향후 mp3 경로만 audioSrc에 넣으면 바로 재생됩니다.
+function playBirdSound(src){
+  const audioEl = document.getElementById("bird-audio");
+  const hint = document.getElementById("sound-hint");
+
+  if(src && src.trim() !== ""){
+    audioEl.src = src;
+    audioEl.play().catch(() => {
+      hint.textContent = "소리를 재생할 수 없어요. 다시 시도해주세요.";
+    });
+    hint.textContent = "🎵 소리를 재생하고 있어요...";
+  } else {
+    hint.textContent = "🎵 (음원 준비중이에요! 어떤 소리일지 상상해보세요)";
+  }
+}
+
+/* =========================================================
+   새 도감 모달 로직
+   ========================================================= */
+
+function buildGuideList(){
+  const listEl = document.getElementById("guide-card-list");
+  listEl.innerHTML = birdGuideData.map(item => `
+    <div class="guide-card" data-id="${item.id}">
+      <span class="g-title">${item.title}</span>
+    </div>
+  `).join("");
+
+  listEl.querySelectorAll(".guide-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const id = Number(card.dataset.id);
+      showGuideDetail(id);
+    });
+  });
+}
+
+function showGuideDetail(id){
+  const item = birdGuideData.find(g => g.id === id);
+  if(!item) return;
+
+  document.getElementById("guide-detail-title").textContent = item.title;
+  document.getElementById("guide-detail-desc").textContent = item.desc;
+  document.getElementById("guide-detail-tags").textContent = item.tags;
+
+  document.getElementById("guide-list-view").style.display = "none";
+  document.getElementById("guide-detail-view").style.display = "block";
+}
+
+function backToGuideList(){
+  document.getElementById("guide-detail-view").style.display = "none";
+  document.getElementById("guide-list-view").style.display = "block";
+}
+
+function openGuide(){
+  buildGuideList();
+  backToGuideList();
+  document.getElementById("modal-guide").classList.remove("hidden");
+}
+
+function closeGuide(){
+  document.getElementById("modal-guide").classList.add("hidden");
+}
+
+document.getElementById("modal-guide").addEventListener("click", (e) => {
+  if(e.target.id === "modal-guide"){
+    closeGuide();
+  }
+});
+
+</script>
+</body>
+</html>
