@@ -687,8 +687,8 @@ function renderSound(q, content){
     <div class="question-box">
       <span class="question-type-badge">새소리 문제</span>
       <div class="question-text">${q.question}</div>
-      <button class="sound-btn" id="sound-play-btn">🔊 새소리 재생</button>
-      <div class="sound-hint" id="sound-hint">버튼을 눌러 소리를 들어보세요</div>
+      <button class="sound-btn" id="sound-play-btn">🔄 다시듣기</button>
+      <div class="sound-hint" id="sound-hint">소리를 재생하고 있어요...</div>
     </div>
     <div class="option-grid single-col">${optionsHtml}</div>
   `;
@@ -696,6 +696,9 @@ function renderSound(q, content){
   document.getElementById("sound-play-btn").addEventListener("click", () => {
     playBirdSound(q.audioSrc);
   });
+
+  // 문제가 나오면 자동으로 한 번 재생
+  playBirdSound(q.audioSrc);
 
   content.querySelectorAll(".option-card").forEach(card => {
     card.addEventListener("click", () => {
